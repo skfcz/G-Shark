@@ -15,9 +15,15 @@ namespace GShark.Geometry
     public class NurbsCurve : NurbsBase, ITransformable<NurbsCurve>
     {
         /// <summary>
-        /// Internal constructor, creates a NURBS curve.
+        /// Public constructor for a NURBS curve based on existing values for the degree, knot vector, and control points
         /// </summary>
-        internal NurbsCurve(int degree, KnotVector knots, List<Point4> controlPoints) 
+        /// The usual constraints of NURBS data apply:
+        /// * control point weight is none negative
+        /// * the length of the control points and knot vector must match: knots.Length = controlPoints.Length + degree + 1  
+        /// <param name="degree">The curve degree.</param>
+        /// <param name="knots">A KnotVector containing none negative values in the [0,1] range. Unify the knot vector if needed </param>
+        /// <param name="controlPoints">A list of control points, containing the X,Y,Z coordinate + the control points weight</param>
+        public NurbsCurve(int degree, KnotVector knots, List<Point4> controlPoints) 
             : base(degree, knots, controlPoints)
         {
         }

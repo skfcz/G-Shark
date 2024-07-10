@@ -480,5 +480,110 @@ namespace GShark.Test.XUnit.Geometry
             (expectedPt2 == pt2).Should().BeTrue();
             (expectedPt3 == pt3).Should().BeTrue();
         }
+        
+        [Fact]
+        public void Returns_A_Rectangular_NURBS()
+        {
+            /* <ocx:NURBS3D id="nplcid14" ocx:GUIDRef="9d58128e-0a39-443b-837a-367e77d15ba2">
+                <ocx:CurveLength numericvalue="0" unit="Um" />
+                <ocx:NURBSproperties degree="3" numCtrlPts="13" numKnots="17" form="Unknown" isRational="false" />
+                <ocx:KnotVector value="0 0 0 0 1 1 1 2 2 2 3 3 3 4 4 4 4" />
+                <ocx:ControlPtList>
+                <ocx:ControlPoint coordinates="0 0 0" unit="Um" weight="1" />
+                <ocx:ControlPoint coordinates="3.33333 0 0" unit="Um" weight="1" />
+                <ocx:ControlPoint coordinates="6.66667 0 0" unit="Um" weight="1" />
+                <ocx:ControlPoint coordinates="10 0 0" unit="Um" weight="1" />
+                <ocx:ControlPoint coordinates="10 3.33333 0" unit="Um" weight="1" />
+                <ocx:ControlPoint coordinates="10 6.66667 0" unit="Um" weight="1" />
+                <ocx:ControlPoint coordinates="10 10 0" unit="Um" weight="1" />
+                <ocx:ControlPoint coordinates="6.66667 10 0" unit="Um" weight="1" />
+                <ocx:ControlPoint coordinates="3.33333 10 0" unit="Um" weight="1" />
+                <ocx:ControlPoint coordinates="0 10 0" unit="Um" weight="1" />
+                <ocx:ControlPoint coordinates="0 6.66667 0" unit="Um" weight="1" />
+                <ocx:ControlPoint coordinates="0 3.33333 0" unit="Um" weight="1" />
+                <ocx:ControlPoint coordinates="0 0 0" unit="Um" weight="1" />
+                </ocx:ControlPtList>
+                </ocx:NURBS3D>
+                </ocx:CompositeCurve3D> */            
+         
+            // Arrange
+            
+            // The NURBS evaluation only works correctly with a unified knotvector
+            var orgKnotVector = new KnotVector() {0, 0, 0, 0, 1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4, 4, };
+            var unifiedKnotVector = new KnotVector();
+            foreach (var d in orgKnotVector)
+            {
+                unifiedKnotVector.Add( d/4.0);
+            }
+
+
+            var controlPoints = new List<Point4>();
+            controlPoints.Add( new Point4(0, 0, 0, 1));
+            controlPoints.Add( new Point4(3.33333 ,0 ,0, 1));
+            controlPoints.Add(new Point4(6.66667, 0, 0, 1));
+            controlPoints.Add(new Point4(10, 0, 0, 1));
+            controlPoints.Add(new Point4(10 ,3.33333, 0, 1));
+            controlPoints.Add(new Point4(10 ,6.66667 ,0, 1));
+            controlPoints.Add(new Point4(10 ,10, 0, 1));
+            controlPoints.Add(new Point4(6.66667, 10, 0, 1));
+            controlPoints.Add(new Point4(3.33333,10 ,0, 1));
+            controlPoints.Add(new Point4(0 ,10, 0, 1));
+            controlPoints.Add(new Point4(0 ,6.66667,0, 1));
+            controlPoints.Add(new Point4(0 ,3.33333, 0, 1));
+            controlPoints.Add(new Point4(0 ,0,0, 1));
+          
+            
+            Point3 expectedPt1 = new Point3(0, 0,0);
+            Point3 expectedPt2 = new Point3(10, 0, 0);
+            Point3 expectedPt3 = new Point3(10, 10, 0);
+            Point3 expectedPt4 = new Point3(0, 10, 0);
+            Point3 expectedPt12 = new Point3(5, 10, 0);
+            
+            double expectedLength = 40;
+
+            // Act
+            var nurbsCurve = new NurbsCurve(3, unifiedKnotVector, controlPoints);
+           
+            /*
+            var (tValues, pts) = GShark.Sampling.Curve.AdaptiveSampleRange(nurbsCurve, unifiedKnotVector.First(), unifiedKnotVector.Last(), 1e-5);
+        
+            foreach (var pointAt in pts)
+            {
+                _testOutput.WriteLine(pointAt.ToString() + ", " + nurbsCurve.ClosestParameter(pointAt));
+            }
+
+            double u = unifiedKnotVector.First();
+            var us = new List<double>();
+            var points = new List<Point3>();
+            var derivates1 = new List<Vector3>();
+            var derivates2 = new List<Vector3>();
+            while (u < unifiedKnotVector.Last())
+            {
+                us.Add(u);
+                
+                var derivatives = nurbsCurve.DerivativeAt(u,3);
+                points.Add(derivatives[0]);
+                derivates1.Add( derivatives[1]);
+                derivates2.Add( derivatives[2]);
+
+                u += 0.01;
+            }
+            
+            for( int i  = 0; i < points.Count;i++)
+            {
+                _testOutput.WriteLine(us[i] + ", x " + points[i] + ", x' " + derivates1[i] + ", x '' " + derivates2[i]);
+            }
+            */
+            
+            // Arrange
+            (nurbsCurve.Length - expectedLength).Should().BeLessThan(GSharkMath.MinTolerance);
+            nurbsCurve.ClosestPoint(expectedPt1).DistanceTo(expectedPt1).Should().BeLessThan(1e-4);
+            nurbsCurve.ClosestPoint(expectedPt2).DistanceTo(expectedPt2).Should().BeLessThan(1e-4);
+            nurbsCurve.ClosestPoint(expectedPt3).DistanceTo(expectedPt3).Should().BeLessThan(1e-4);
+            nurbsCurve.ClosestPoint(expectedPt4).DistanceTo(expectedPt4).Should().BeLessThan(1e-4);
+            nurbsCurve.ClosestPoint(expectedPt12).DistanceTo(expectedPt12).Should().BeLessThan(1e-4);
+            
+        }
+        
     }
 }
